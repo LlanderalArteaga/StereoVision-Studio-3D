@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10131b">
+  <meta name="description" content="Studio local para visualizar y calibrar imágenes anaglifo, imágenes SBS y video estereoscópico.">
+  <title>StereoVision Studio 3D</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script type="module" src="assets/js/main.js"></script>
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="StereoVision Studio, inicio">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+        <span><strong>STEREOVISION</strong><small>STUDIO <b>3D</b></small></span>
+      </a>
+      <button class="button button-quiet" id="vrButton" type="button" disabled><span class="vr-icon">◉</span> Modo visor <kbd>V</kbd></button>
+    </header>
+
+    <main id="inicio" class="workspace">
+      <aside class="sidebar">
+        <div class="section-kicker">ESPACIO DE TRABAJO</div>
+        <div class="module-list" role="tablist" aria-label="Módulo de visualización">
+          <button class="module-tab active" role="tab" aria-selected="true" data-mode="anaglyph"><span class="tab-icon anaglyph-icon">◉</span><span><b>Anaglifo</b><small>Rojo · cian</small></span><span class="tab-arrow">↗</span></button>
+          <button class="module-tab" role="tab" aria-selected="false" data-mode="sbs"><span class="tab-icon sbs-icon">◫</span><span><b>Imagen SBS</b><small>Side by side</small></span><span class="tab-arrow">↗</span></button>
+          <button class="module-tab" role="tab" aria-selected="false" data-mode="video"><span class="tab-icon video-icon">▷</span><span><b>Video SBS</b><small>Estéreo sincronizado</small></span><span class="tab-arrow">↗</span></button>
+        </div>
+
+        <fieldset class="input-method" id="inputMethod">
+          <legend id="inputMethodTitle">Tipo de imagen</legend>
+          <div class="input-method-options" id="inputMethodOptions"></div>
+        </fieldset>
+
+        <div class="sidebar-rule"></div>
+        <div class="section-heading"><div><div class="section-kicker">BIBLIOTECA LOCAL</div><h2>Contenido</h2></div><span class="count-pill" id="libraryCount">0</span></div>
+        <div class="library-card" id="libraryCard">
+          <div class="library-thumb" id="libraryThumb"><span class="thumb-glyph">＋</span></div>
+          <div class="library-info"><strong id="libraryName">Sin archivo</strong><small id="libraryMeta">Importa un contenido para empezar</small></div>
+          <button class="icon-button remove-button" id="removeButton" type="button" aria-label="Quitar archivo" title="Quitar archivo" disabled>×</button>
+        </div>
+        <label class="button button-outline import-button" for="fileInput"><span>＋</span> <span id="importButtonText">Importar archivo</span></label>
+        <input id="fileInput" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" disabled>
+        <p class="format-hint" id="formatHint">JPG, PNG o WebP · máximo 250 MB</p>
+
+      </aside>
+
+      <section class="studio-main" aria-label="Área de trabajo">
+        <div class="studio-heading"><div><div class="breadcrumb">STUDIO <span>/</span> <b id="modeBreadcrumb">ANAGLIFO</b></div><h1 id="modeTitle">Visor anaglifo</h1><p id="modeDescription">Visualiza imágenes anaglifo con lentes rojo-cian.</p></div><div class="heading-actions"><span class="status-chip" id="statusChip"><i></i> SIN CONTENIDO</span><button class="button button-outline compact" id="openFileButton" type="button">＋ <span>Abrir archivo</span></button></div></div>
+
+        <div class="viewer-card" id="viewerCard">
+          <div class="viewer-toolbar"><div class="viewer-toolbar-left"><span class="viewer-label"><span class="viewer-spark">✳</span> VISTA PREVIA</span><span class="toolbar-separator"></span><span class="zoom-label" id="zoomReadout">100%</span></div><div class="viewer-toolbar-right"><span class="eyebadge left-eye">L</span><span class="eye-caption">OJO IZQUIERDO</span><span class="eye-separator">·</span><span class="eyebadge right-eye">R</span><span class="eye-caption">OJO DERECHO</span></div></div>
+          <div class="stage" id="stage">
+            <canvas id="stereoCanvas" aria-label="Vista previa estereoscópica"></canvas>
+            <div class="empty-state" id="emptyState"><div class="empty-art"><div class="empty-orbit orbit-one"></div><div class="empty-orbit orbit-two"></div><span>3D</span><i class="empty-cross cross-one">✳</i><i class="empty-cross cross-two">✳</i></div><h2>Tu espacio, en tres dimensiones</h2><p>Elige el tipo de contenido e importa tu archivo para iniciar.</p><label class="button button-primary" for="fileInput"><span>＋</span> Seleccionar archivo</label></div>
+            <div class="loading-state hidden" id="loadingState"><div class="loader"></div><span>Preparando visualización…</span></div>
+            <div class="toast hidden" id="toast" role="alert"></div>
+          </div>
+          <div class="viewer-footer"><div class="file-summary"><span class="file-dot"></span><span id="activeFileName">Esperando archivo</span><span class="file-divider"></span><span id="activeFileType">—</span></div><div class="stage-tools"><button class="icon-button" id="fitButton" type="button" title="Ajustar a vista" aria-label="Ajustar a vista">⌗</button><span class="toolbar-separator"></span><button class="icon-button" id="fullscreenButton" type="button" title="Pantalla completa" aria-label="Pantalla completa">⛶</button></div></div>
+        </div>
+
+        <div class="video-controls hidden" id="videoControls">
+          <button class="play-button" id="playButton" type="button" aria-label="Reproducir" disabled>▶</button>
+          <button class="skip-button" id="backButton" type="button" aria-label="Retroceder 10 segundos" title="Retroceder 10 segundos" disabled>−10</button>
+          <span class="time-readout" id="currentTime">00:00</span>
+          <input class="timeline" id="timeline" type="range" min="0" max="1000" value="0" aria-label="Posición del video" disabled>
+          <span class="time-readout duration" id="duration">00:00</span>
+          <button class="skip-button" id="forwardButton" type="button" aria-label="Adelantar 10 segundos" title="Adelantar 10 segundos" disabled>+10</button>
+          <button class="icon-button volume-toggle" id="muteButton" type="button" aria-label="Silenciar" disabled>◖</button>
+          <input class="volume-slider" id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volumen" disabled>
+        </div>
+
+        <div class="info-strip"><span class="info-icon">i</span><p id="infoText">El anaglifo combina los canales rojo y cian de una imagen estereoscópica. Usa lentes rojo-cian para percibir profundidad.</p><span class="shortcut"><kbd>V</kbd> modo visor</span></div>
+      </section>
+
+      <aside class="inspector">
+        <div class="inspector-header"><div><div class="section-kicker">AJUSTES DE IMAGEN</div><h2>Calibración</h2></div><button class="reset-button" id="resetButton" type="button" disabled>↺ <span>Restablecer</span></button></div>
+        <div id="anaglyphPanel" class="control-panel">
+          <div class="control-group"><div class="control-label"><label for="scaleControl">Escala</label><output id="scaleOutput">100%</output></div><input id="scaleControl" type="range" min="50" max="160" value="100"><div class="range-ends"><span>50%</span><span>160%</span></div></div>
+          <div class="control-group"><div class="control-label"><label for="brightnessControl">Brillo</label><output id="brightnessOutput">100%</output></div><input id="brightnessControl" type="range" min="50" max="150" value="100"><div class="range-ends"><span>50%</span><span>150%</span></div></div>
+          <div class="control-group"><div class="control-label"><label for="contrastControl">Contraste</label><output id="contrastOutput">100%</output></div><input id="contrastControl" type="range" min="50" max="150" value="100"><div class="range-ends"><span>50%</span><span>150%</span></div></div>
+          <div class="lens-tip"><span class="lens-symbol">◉</span><p><b>Prepara tus lentes</b><br>Filtro rojo sobre el ojo izquierdo y cian sobre el derecho.</p></div>
+        </div>
+        <div id="sbsPanel" class="control-panel hidden">
+          <div class="control-group"><div class="control-label"><label for="shiftControl">Separación horizontal</label><output id="shiftOutput">0 px</output></div><input id="shiftControl" type="range" min="-30" max="30" value="0"><div class="range-ends"><span>−30 px</span><span>+30 px</span></div><p class="control-help">Ajusta la posición relativa de cada perspectiva.</p></div>
+          <div class="control-group"><div class="control-label"><label for="verticalControl">Alineación vertical</label><output id="verticalOutput">0 px</output></div><input id="verticalControl" type="range" min="-30" max="30" value="0"><div class="range-ends"><span>−30 px</span><span>+30 px</span></div></div>
+          <div class="control-group"><div class="control-label"><label for="sbsScaleControl">Escala</label><output id="sbsScaleOutput">100%</output></div><input id="sbsScaleControl" type="range" min="75" max="140" value="100"><div class="range-ends"><span>75%</span><span>140%</span></div></div>
+          <label class="toggle-row"><span><b>Intercambiar ojos</b><small>Invierte las perspectivas L / R</small></span><input id="swapControl" type="checkbox"><span class="toggle-ui"></span></label>
+        </div>
+        <div class="inspector-foot"><div class="calibration-note"><span>✳</span><p>Los ajustes solo afectan la vista previa. El archivo original permanece intacto.</p></div><div class="stereo-legend"><span><i class="legend-left"></i> IZQUIERDO</span><span><i class="legend-right"></i> DERECHO</span></div></div>
+      </aside>
+    </main>
+
+    <footer class="site-footer"><div>STEREOVISION STUDIO 3D</div><div><a href="#creditos" id="creditsLink">Créditos</a><span>·</span><a href="README.md">Documentación</a><span>·</span><span>v1.0.0</span></div></footer>
+  </div>
+
+  <section class="vr-view hidden" id="vrView" aria-label="Visor estereoscópico VR">
+    <div class="vr-top"><span><span class="live-dot"></span> STEREOVISION <b>VIEWER</b></span><button id="exitVrButton" type="button" class="vr-exit">× <span>Salir</span></button></div>
+    <div class="vr-orientation" id="orientationNotice">Gira tu teléfono a posición horizontal para usar las gafas.</div>
+    <canvas id="vrCanvas" aria-label="Vista para visor de dos lentes"></canvas>
+    <div class="vr-bottom"><span id="vrFileLabel">VISTA ESTEREOSCÓPICA</span><button id="vrPlaybackButton" class="vr-play-toggle hidden" type="button">▶ Reproducir</button><span>Centra el teléfono en tus gafas</span></div>
+  </section>
+  <dialog id="creditsDialog" class="credits-dialog"><form method="dialog"><button class="dialog-close" aria-label="Cerrar">×</button><div class="section-kicker">ACERCA DEL PROYECTO</div><h2>Créditos</h2><p><b>StereoVision Studio 3D</b> es una aplicación educativa de código original para visualizar contenido estereoscópico desde el navegador.</p><div class="credit-row"><span>Diseño y desarrollo</span><b>Axel Llanderal Arteaga</b></div><div class="credit-row"><span>Tecnologías</span><b>HTML · CSS · JavaScript Canvas</b></div><div class="credit-row"><span>Recursos gráficos</span><b>Iconografía y favicon originales</b></div><p class="credits-note">No se incluyen imágenes ni videos de muestra. Usa contenido propio o materiales con licencia adecuada.</p><button class="button button-primary dialog-done">Listo</button></form></dialog>
+</body>
+</html>
