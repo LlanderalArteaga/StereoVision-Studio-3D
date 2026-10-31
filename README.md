@@ -38,7 +38,7 @@ assets/
 
 La vista SBS recorta las dos mitades del mismo archivo. El video se dibuja desde un único elemento multimedia para mantener el sincronismo y sus controles. Los cambios de calibración actúan en la representación en pantalla.
 
-Para generar un anaglifo, selecciona las fotos en los campos separados **Foto izquierda** y **Foto derecha**. La primera aporta el canal rojo y la segunda los canales verde y azul. Los perfiles guardados se ofrecen cuando coinciden el módulo y el tipo de entrada; permanecen en el almacenamiento del navegador donde fueron creados.
+Para generar un anaglifo, selecciona las fotos en los campos separados **Foto izquierda** y **Foto derecha**. También puedes usar el botón central: te pedirá primero la imagen izquierda y después la derecha. La primera aporta el canal rojo y la segunda los canales verde y azul. Los perfiles guardados se ofrecen cuando coinciden el módulo y el tipo de entrada; permanecen en el almacenamiento del navegador donde fueron creados.
 
 ## Ejecución local
 

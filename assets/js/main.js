@@ -79,6 +79,7 @@ function updateInputChoices() {
   $('#leftFileInput').value = $('#rightFileInput').value = '';
   $('#leftFileName').textContent = $('#rightFileName').textContent = 'Sin seleccionar';
   $('#generatePairButton').disabled = true;
+  updateCenterImportButton();
   $('#infoText').textContent = mode === 'sbs' && layout === 'mono'
     ? 'La foto 2D se duplicará para llenar ambas vistas. Esto genera formato SBS, pero no crea profundidad estereoscópica.'
     : mode === 'video' && layout === 'mono'
@@ -86,6 +87,14 @@ function updateInputChoices() {
       : mode === 'anaglyph' && layout === 'pair'
         ? 'Selecciona primero la foto del ojo izquierdo y después la del derecho. Se combinarán en un anaglifo rojo-cian.'
         : moduleCopy[mode].info;
+}
+function updateCenterImportButton() {
+  const pairMode = mode === 'anaglyph' && layout === 'pair';
+  const text = !pairMode ? 'Seleccionar archivo'
+    : !pairFiles.left ? 'Seleccionar foto izquierda'
+      : !pairFiles.right ? 'Seleccionar foto derecha'
+        : 'Combinar anaglifo';
+  $('#centerImportText').textContent = text;
 }
 function clearContent(reset = true) {
   video.dispose();
@@ -156,6 +165,7 @@ $('#inputMethodOptions').addEventListener('change', event => {
   $('#leftFileInput').value = $('#rightFileInput').value = '';
   $('#leftFileName').textContent = $('#rightFileName').textContent = 'Sin seleccionar';
   $('#generatePairButton').disabled = true;
+  updateCenterImportButton();
   $('#infoText').textContent = mode === 'sbs' && layout === 'mono'
     ? 'La foto 2D se duplicará para llenar ambas vistas. Esto genera formato SBS, pero no crea profundidad estereoscópica.'
     : mode === 'video' && layout === 'mono'
@@ -165,9 +175,15 @@ $('#inputMethodOptions').addEventListener('change', event => {
         : moduleCopy[mode].info;
   refreshPresets();
 });
-$('#leftFileInput').addEventListener('change', event => { pairFiles.left = event.target.files?.[0] || null; $('#leftFileName').textContent = pairFiles.left?.name || 'Sin seleccionar'; $('#generatePairButton').disabled = !pairFiles.left || !pairFiles.right; });
-$('#rightFileInput').addEventListener('change', event => { pairFiles.right = event.target.files?.[0] || null; $('#rightFileName').textContent = pairFiles.right?.name || 'Sin seleccionar'; $('#generatePairButton').disabled = !pairFiles.left || !pairFiles.right; });
+$('#leftFileInput').addEventListener('change', event => { pairFiles.left = event.target.files?.[0] || null; $('#leftFileName').textContent = pairFiles.left?.name || 'Sin seleccionar'; $('#generatePairButton').disabled = !pairFiles.left || !pairFiles.right; updateCenterImportButton(); });
+$('#rightFileInput').addEventListener('change', event => { pairFiles.right = event.target.files?.[0] || null; $('#rightFileName').textContent = pairFiles.right?.name || 'Sin seleccionar'; $('#generatePairButton').disabled = !pairFiles.left || !pairFiles.right; updateCenterImportButton(); });
 $('#generatePairButton').addEventListener('click', () => importFile([pairFiles.left, pairFiles.right]));
+$('#centerImportButton').addEventListener('click', () => {
+  if (mode !== 'anaglyph' || layout !== 'pair') { ui.file.click(); return; }
+  if (!pairFiles.left) $('#leftFileInput').click();
+  else if (!pairFiles.right) $('#rightFileInput').click();
+  else importFile([pairFiles.left, pairFiles.right]);
+});
 $('#openFileButton').addEventListener('click', () => ui.file.click());
 ui.remove.addEventListener('click', () => clearContent(true));
 ui.reset.addEventListener('click', () => { resetCalibration(); updateCalibration(); });
