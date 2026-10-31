@@ -43,6 +43,13 @@
         </div>
         <label class="button button-outline import-button" for="fileInput"><span>＋</span> <span id="importButtonText">Importar archivo</span></label>
         <input id="fileInput" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" disabled>
+        <div class="pair-upload hidden" id="pairUpload">
+          <label class="button button-outline pair-pick" for="leftFileInput">＋ Foto izquierda<input id="leftFileInput" type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <small class="pair-file-name" id="leftFileName">Sin seleccionar</small>
+          <label class="button button-outline pair-pick" for="rightFileInput">＋ Foto derecha<input id="rightFileInput" type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <small class="pair-file-name" id="rightFileName">Sin seleccionar</small>
+          <button class="button button-primary pair-generate" id="generatePairButton" type="button" disabled>Combinar anaglifo</button>
+        </div>
         <p class="format-hint" id="formatHint">JPG, PNG o WebP · máximo 250 MB</p>
 
       </aside>
@@ -77,6 +84,7 @@
 
       <aside class="inspector">
         <div class="inspector-header"><div><div class="section-kicker">AJUSTES DE IMAGEN</div><h2>Calibración</h2></div><button class="reset-button" id="resetButton" type="button" disabled>↺ <span>Restablecer</span></button></div>
+        <div class="preset-tools"><div class="preset-load-row"><select id="presetSelect" aria-label="Ajustes de calibración guardados"><option value="">Mis ajustes guardados</option></select><button id="applyPresetButton" type="button" disabled>Usar</button></div><div class="preset-save-row"><input id="presetName" type="text" maxlength="40" placeholder="Nombre del ajuste" aria-label="Nombre del ajuste"><button id="savePresetButton" type="button" disabled>Guardar</button></div></div>
         <div id="anaglyphPanel" class="control-panel">
           <div class="control-group"><div class="control-label"><label for="scaleControl">Escala</label><output id="scaleOutput">100%</output></div><input id="scaleControl" type="range" min="50" max="160" value="100"><div class="range-ends"><span>50%</span><span>160%</span></div></div>
           <div class="control-group"><div class="control-label"><label for="brightnessControl">Brillo</label><output id="brightnessOutput">100%</output></div><input id="brightnessControl" type="range" min="50" max="150" value="100"><div class="range-ends"><span>50%</span><span>150%</span></div></div>

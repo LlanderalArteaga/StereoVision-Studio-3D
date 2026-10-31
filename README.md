@@ -17,6 +17,7 @@ La aplicación procesa los archivos localmente en el navegador. No hay cuentas, 
 - Visor de video SBS con una sola fuente de reproducción, controles nativos propios de play/pausa, búsqueda, volumen y calibración simultánea.
 - Alternativa para duplicar video 2D en ambas vistas, indicada como contenido sin profundidad estereoscópica.
 - Modo Viewer con dos regiones para los ojos, salida táctil y aviso de orientación vertical.
+- Perfiles de calibración con nombre, guardados en el navegador y reutilizables para el mismo módulo y tipo de entrada.
 - Sustitución de archivo, validación de formatos y decodificación, restablecimiento de parámetros y liberación de recursos temporales.
 - Diseño adaptable a escritorio y teléfono.
 
@@ -36,6 +37,8 @@ assets/
 ```
 
 La vista SBS recorta las dos mitades del mismo archivo. El video se dibuja desde un único elemento multimedia para mantener el sincronismo y sus controles. Los cambios de calibración actúan en la representación en pantalla.
+
+Para generar un anaglifo, selecciona las fotos en los campos separados **Foto izquierda** y **Foto derecha**. La primera aporta el canal rojo y la segunda los canales verde y azul. Los perfiles guardados se ofrecen cuando coinciden el módulo y el tipo de entrada; permanecen en el almacenamiento del navegador donde fueron creados.
 
 ## Ejecución local
 
