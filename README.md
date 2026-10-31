@@ -18,6 +18,9 @@ La aplicación procesa los archivos localmente en el navegador. No hay cuentas, 
 - Alternativa para duplicar video 2D en ambas vistas, indicada como contenido sin profundidad estereoscópica.
 - Modo Viewer con dos regiones para los ojos, salida táctil y aviso de orientación vertical.
 - Perfiles de calibración con nombre, guardados en el navegador y reutilizables para el mismo módulo y tipo de entrada.
+- Vista de anaglifo a pantalla completa, con salida en navegadores móviles que no ofrecen Fullscreen API.
+- Descarga de anaglifo generado en PNG e imagen 2D duplicada a SBS en PNG. Los archivos que ya están preparados se descargan sin transformación.
+- Exportación de video 2D duplicado a SBS como WebM mediante captura del video en tiempo real; incluye audio si el navegador permite capturarlo.
 - Sustitución de archivo, validación de formatos y decodificación, restablecimiento de parámetros y liberación de recursos temporales.
 - Diseño adaptable a escritorio y teléfono.
 
@@ -33,10 +36,13 @@ assets/
   js/modules/calibration.js  Valores, restablecimiento e indicadores
   js/modules/renderer.js     Composición Canvas 2D de imagen y perspectivas
   js/modules/video.js        Reproducción, búsqueda y liberación de video
+  js/modules/exports.js      Descargas de imagen y captura de video SBS
   js/modules/vr.js           Presentación en dos regiones para móvil
 ```
 
 La vista SBS recorta las dos mitades del mismo archivo. El video se dibuja desde un único elemento multimedia para mantener el sincronismo y sus controles. Los cambios de calibración actúan en la representación en pantalla.
+
+El botón de descarga conserva los originales que ya son anaglifo, SBS o video SBS. Para dos fotos de anaglifo descarga el resultado combinado como PNG; para una foto 2D en modo SBS descarga un PNG con la foto duplicada a ambos lados. Al elegir un video 2D, **Crear y descargar SBS** reproduce el video completo y captura ambas vistas en un archivo WebM. La exportación tarda lo mismo que la duración del video y depende de que el navegador tenga `MediaRecorder` y `canvas.captureStream`; el audio se agrega cuando el navegador lo permite. No convierte a MP4.
 
 Para generar un anaglifo, selecciona las fotos en los campos separados **Foto izquierda** y **Foto derecha**. También puedes usar el botón central: te pedirá primero la imagen izquierda y después la derecha. La primera aporta el canal rojo y la segunda los canales verde y azul. Los perfiles guardados se ofrecen cuando coinciden el módulo y el tipo de entrada; permanecen en el almacenamiento del navegador donde fueron creados.
 
@@ -74,6 +80,7 @@ Registra la evidencia ejecutada antes de entregar:
 | P-07 | Archivo no compatible y recuperación | Pendiente de prueba local |
 | P-08 | VR en teléfono horizontal y salida | Pendiente de prueba con dispositivo |
 | P-09 | Sitio HTTPS en GitHub Pages | Pendiente de publicación |
+| P-10 | Descargas PNG anaglifo/SBS y exportación WebM | Pendiente de prueba local |
 
 Incluye en la entrega resultados reales, dispositivo/navegador, observaciones de calibración e incidencias resueltas. El repositorio público y la publicación HTTPS deben configurarse desde la cuenta del estudiante.
 

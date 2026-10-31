@@ -39,3 +39,22 @@
 .vr-play-toggle:hover{border-color:var(--mint);color:var(--mint)}
 @media(max-width:1120px){.preset-tools{grid-column:2;grid-row:1}.inspector-header{grid-column:1;grid-row:1}.inspector .control-panel{padding-top:8px}}
 @media(max-width:720px){.pair-upload{grid-column:1/-1;grid-template-columns:1fr 1fr}.pair-pick{font-size:9px}.preset-tools{display:grid;grid-template-columns:1fr;grid-column:auto;grid-row:auto;padding:8px 0 0}.inspector-header{display:flex;grid-column:auto;grid-row:auto}}
+.stage-tools .icon-button:disabled{opacity:.35;cursor:not-allowed}
+#viewerCard:fullscreen .stage{background:#05070b}
+#viewerCard:fullscreen .stage:before{display:none}
+.video-export-tools{display:flex;align-items:center;gap:10px;margin-top:8px;min-height:36px}
+.video-export-tools .button{padding:8px 11px;font-size:10px;white-space:nowrap}
+.video-export-tools>span{color:#8993a4;font-size:9px;line-height:1.4}
+#downloadVideoButton:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:720px){.video-export-tools{align-items:flex-start;flex-direction:column;gap:5px;margin-top:6px}.video-export-tools .button{align-self:flex-start}.video-export-tools>span{font-size:9px}.viewer-card:fullscreen{height:100dvh}}
+.viewer-card.theater-mode{position:fixed;inset:0;z-index:50;width:100vw;height:100vh;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}
+.viewer-card.theater-mode .viewer-toolbar,.viewer-card.theater-mode .viewer-footer{display:none}
+.viewer-card.theater-mode .stage{min-height:0;background:#05070b}
+.viewer-card.theater-mode .stage:before{display:none}
+.exit-fullscreen-button{position:absolute;z-index:4;top:12px;right:12px;border:1px solid #ffffff35;border-radius:6px;background:#111820d9;color:#eef4f5;padding:8px 10px;font-size:11px;cursor:pointer}
+.exit-fullscreen-button:hover{border-color:var(--mint);color:var(--mint)}
+#viewerCard:fullscreen .exit-fullscreen-button{display:block!important}
+.viewer-card.theater-mode .exit-fullscreen-button{display:block!important}
+.fullscreen-action{display:flex;align-items:center;gap:5px;font-size:15px}
+.fullscreen-action span{font-size:9px;white-space:nowrap}
+body:has(.viewer-card.theater-mode){overflow:hidden}

@@ -61,11 +61,12 @@
           <div class="viewer-toolbar"><div class="viewer-toolbar-left"><span class="viewer-label"><span class="viewer-spark">✳</span> VISTA PREVIA</span><span class="toolbar-separator"></span><span class="zoom-label" id="zoomReadout">100%</span></div><div class="viewer-toolbar-right"><span class="eyebadge left-eye">L</span><span class="eye-caption">OJO IZQUIERDO</span><span class="eye-separator">·</span><span class="eyebadge right-eye">R</span><span class="eye-caption">OJO DERECHO</span></div></div>
           <div class="stage" id="stage">
             <canvas id="stereoCanvas" aria-label="Vista previa estereoscópica"></canvas>
+            <button id="exitFullscreenButton" class="exit-fullscreen-button hidden" type="button" aria-label="Salir de pantalla completa">× Salir</button>
             <div class="empty-state" id="emptyState"><div class="empty-art"><div class="empty-orbit orbit-one"></div><div class="empty-orbit orbit-two"></div><span>3D</span><i class="empty-cross cross-one">✳</i><i class="empty-cross cross-two">✳</i></div><h2>Tu espacio, en tres dimensiones</h2><p>Elige el tipo de contenido e importa tu archivo para iniciar.</p><button class="button button-primary" id="centerImportButton" type="button"><span>＋</span> <span id="centerImportText">Seleccionar archivo</span></button></div>
             <div class="loading-state hidden" id="loadingState"><div class="loader"></div><span>Preparando visualización…</span></div>
             <div class="toast hidden" id="toast" role="alert"></div>
           </div>
-          <div class="viewer-footer"><div class="file-summary"><span class="file-dot"></span><span id="activeFileName">Esperando archivo</span><span class="file-divider"></span><span id="activeFileType">—</span></div><div class="stage-tools"><button class="icon-button" id="fitButton" type="button" title="Ajustar a vista" aria-label="Ajustar a vista">⌗</button><span class="toolbar-separator"></span><button class="icon-button" id="fullscreenButton" type="button" title="Pantalla completa" aria-label="Pantalla completa">⛶</button></div></div>
+          <div class="viewer-footer"><div class="file-summary"><span class="file-dot"></span><span id="activeFileName">Esperando archivo</span><span class="file-divider"></span><span id="activeFileType">—</span></div><div class="stage-tools"><button class="icon-button" id="downloadImageButton" type="button" title="Descargar resultado" aria-label="Descargar resultado" disabled>⇩</button><button class="icon-button" id="fitButton" type="button" title="Ajustar a vista" aria-label="Ajustar a vista">⌗</button><span class="toolbar-separator"></span><button class="icon-button fullscreen-action" id="fullscreenButton" type="button" title="Pantalla completa" aria-label="Pantalla completa">⛶ <span id="fullscreenButtonLabel">Expandir</span></button></div></div>
         </div>
 
         <div class="video-controls hidden" id="videoControls">
@@ -78,6 +79,7 @@
           <button class="icon-button volume-toggle" id="muteButton" type="button" aria-label="Silenciar" disabled>◖</button>
           <input class="volume-slider" id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volumen" disabled>
         </div>
+        <div class="video-export-tools hidden" id="videoExportTools"><button class="button button-outline" id="downloadVideoButton" type="button" disabled>⇩ <span>Descargar video</span></button><span id="videoExportMessage">El resultado descargado será SBS.</span></div>
 
         <div class="info-strip"><span class="info-icon">i</span><p id="infoText">El anaglifo combina los canales rojo y cian de una imagen estereoscópica. Usa lentes rojo-cian para percibir profundidad.</p><span class="shortcut"><kbd>V</kbd> modo visor</span></div>
       </section>

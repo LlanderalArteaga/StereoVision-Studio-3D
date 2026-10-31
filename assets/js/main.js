@@ -3,6 +3,7 @@ import { validateFile, loadImage, combineAnaglyph } from './modules/files.js';
 import { readCalibration, resetCalibration, updateReadouts, getCalibrationPresets, saveCalibrationPreset, applyCalibration } from './modules/calibration.js';
 import { VideoController } from './modules/video.js';
 import { VRViewer } from './modules/vr.js';
+import { canvasBlob, downloadUrl, downloadBlob, makeSbsImage, recordMonoVideoAsSbs } from './modules/exports.js';
 
 const $ = selector => document.querySelector(selector);
 const ui = {
@@ -10,9 +11,11 @@ const ui = {
   name: $('#libraryName'), meta: $('#libraryMeta'), thumb: $('#libraryThumb'), activeName: $('#activeFileName'), activeType: $('#activeFileType'), count: $('#libraryCount'), remove: $('#removeButton'),
   videoControls: $('#videoControls'), play: $('#playButton'), back: $('#backButton'), forward: $('#forwardButton'), timeline: $('#timeline'), volume: $('#volumeSlider'), mute: $('#muteButton'), current: $('#currentTime'), duration: $('#duration'),
   reset: $('#resetButton'), vr: $('#vrButton'),
+  downloadImage: $('#downloadImageButton'), videoExportTools: $('#videoExportTools'), downloadVideo: $('#downloadVideoButton'), videoExportMessage: $('#videoExportMessage'),
   savePreset: $('#savePresetButton'), presetName: $('#presetName'), presetSelect: $('#presetSelect'), applyPreset: $('#applyPresetButton'),
 };
 let mode = 'anaglyph', layout = 'joined', source = null, objectUrls = [], pairFiles = { left: null, right: null }, toastTimer = 0;
+let exportBusy = false;
 const renderer = new StereoRenderer(ui.canvas, message => showError(message));
 const video = new VideoController(null, renderer, { ...ui, error: showError });
 const vr = new VRViewer($('#vrCanvas'), renderer, () => ({ source, mode, settings: { ...readCalibration(), layout } }));
@@ -43,11 +46,30 @@ function syncControls() {
   ui.stage.classList.toggle('has-content', ready);
   ui.reset.disabled = !ready; ui.remove.disabled = !ready; ui.vr.disabled = !ready || mode === 'anaglyph';
   ui.savePreset.disabled = !ready; ui.applyPreset.disabled = !ready || !ui.presetSelect.value;
+  ui.downloadImage.disabled = !ready || mode === 'video';
+  ui.videoExportTools.classList.toggle('hidden', mode !== 'video');
+  ui.downloadVideo.disabled = !ready || exportBusy;
+  $('#downloadImageButton').title = mode === 'anaglyph' ? 'Descargar imagen anaglifo' : 'Descargar imagen SBS';
+  $('#fullscreenButton').title = mode === 'anaglyph' ? 'Ver anaglifo en pantalla completa' : 'Pantalla completa';
+  $('#fullscreenButton').setAttribute('aria-label', $('#fullscreenButton').title);
+  $('#fullscreenButtonLabel').textContent = mode === 'anaglyph' ? 'Ver grande' : 'Expandir';
+  updateVideoExportInfo();
   document.querySelectorAll('.control-panel input').forEach(input => input.disabled = !ready);
   ui.videoControls.classList.toggle('hidden', mode !== 'video');
   $('#anaglyphPanel').classList.toggle('hidden', mode !== 'anaglyph');
   $('#sbsPanel').classList.toggle('hidden', mode === 'anaglyph');
   setStatus(ready);
+}
+function updateVideoExportInfo() {
+  if (mode !== 'video') return;
+  const label = $('#downloadVideoButton span');
+  if (layout === 'mono') {
+    label.textContent = exportBusy ? 'Generando SBS…' : 'Crear y descargar SBS';
+    ui.videoExportMessage.textContent = exportBusy ? 'El video se procesa en tiempo real. No cierres esta pestaña.' : 'Se creará un WebM SBS; el audio se incluirá si el navegador lo permite.';
+  } else {
+    label.textContent = 'Descargar video SBS';
+    ui.videoExportMessage.textContent = 'Descarga una copia del archivo SBS original.';
+  }
 }
 function updateCalibration() {
   const values = { ...readCalibration(), layout }; renderer.setSettings(values); updateReadouts();
@@ -106,6 +128,47 @@ function clearContent(reset = true) {
   ui.activeName.textContent = 'Esperando archivo'; ui.activeType.textContent = '—'; ui.count.textContent = '0';
   ui.play.disabled = ui.back.disabled = ui.forward.disabled = ui.timeline.disabled = ui.volume.disabled = ui.mute.disabled = true; ui.play.textContent = '▶'; ui.current.textContent = '00:00'; ui.duration.textContent = '00:00'; ui.timeline.value = 0;
   syncControls(); refreshPresets();
+}
+function outputName(suffix, extension) {
+  const base = (ui.activeName.textContent || 'stereovision').replace(/\.[^.]+$/, '').replace(/[<>:"\\|?*]+/g, '_').replace(/\//g, '_').replace(/\s+/g, '_').slice(0, 90) || 'stereovision';
+  return `${base}_${suffix}.${extension}`;
+}
+async function downloadImageResult() {
+  try {
+    if (mode === 'anaglyph' && layout === 'pair') {
+      const blob = await canvasBlob(source);
+      downloadBlob(blob, outputName('anaglifo', 'png'));
+    } else if (mode === 'sbs' && layout === 'mono') {
+      const blob = await canvasBlob(makeSbsImage(source));
+      downloadBlob(blob, outputName('SBS', 'png'));
+    } else if (objectUrls[0]) downloadUrl(objectUrls[0], ui.activeName.textContent);
+    else throw new Error('No hay una imagen lista para descargar.');
+    showSuccess('Descarga de imagen iniciada.');
+  } catch (error) { showError(error.message || 'No se pudo descargar la imagen.'); }
+}
+function setExportBusy(busy) {
+  exportBusy = busy;
+  document.querySelectorAll('.module-tab, #inputMethodOptions input, #fileInput, #leftFileInput, #rightFileInput, #removeButton, #playButton, #backButton, #forwardButton, #timeline, #muteButton, #volumeSlider').forEach(control => { control.disabled = busy || (control.id === 'removeButton' && !source); });
+  ui.downloadVideo.disabled = busy || !source;
+  updateVideoExportInfo();
+}
+async function downloadVideoResult() {
+  if (!source || !objectUrls[0]) return;
+  if (layout !== 'mono') {
+    downloadUrl(objectUrls[0], ui.activeName.textContent);
+    showSuccess('Descarga del video SBS original iniciada.');
+    return;
+  }
+  setExportBusy(true);
+  try {
+    const result = await recordMonoVideoAsSbs(video.video, {
+      onProgress: percent => { ui.videoExportMessage.textContent = `Generando SBS… ${Math.round(percent)}%`; },
+      onPhase: message => { ui.videoExportMessage.textContent = message; },
+    });
+    downloadBlob(result.blob, outputName('SBS', 'webm'));
+    showSuccess(result.hasAudio ? 'Video SBS WebM descargado con audio.' : 'Video SBS WebM descargado. El navegador no entregó una pista de audio para incluir.');
+  } catch (error) { showError(error.message || 'No se pudo exportar el video SBS.'); }
+  finally { setExportBusy(false); }
 }
 function refreshPresets() {
   const selected = ui.presetSelect.value;
@@ -173,6 +236,7 @@ $('#inputMethodOptions').addEventListener('change', event => {
       : mode === 'anaglyph' && layout === 'pair'
         ? 'Selecciona primero la foto del ojo izquierdo y después la del derecho. Se combinarán en un anaglifo rojo-cian.'
         : moduleCopy[mode].info;
+  syncControls();
   refreshPresets();
 });
 $('#leftFileInput').addEventListener('change', event => { pairFiles.left = event.target.files?.[0] || null; $('#leftFileName').textContent = pairFiles.left?.name || 'Sin seleccionar'; $('#generatePairButton').disabled = !pairFiles.left || !pairFiles.right; updateCenterImportButton(); });
@@ -202,7 +266,20 @@ ui.applyPreset.addEventListener('click', () => {
 });
 document.querySelectorAll('.control-panel input').forEach(input => input.addEventListener('input', updateCalibration));
 $('#fitButton').addEventListener('click', () => { resetCalibration(); updateCalibration(); });
-$('#fullscreenButton').addEventListener('click', async () => { try { if (!document.fullscreenElement) await $('#viewerCard').requestFullscreen(); else await document.exitFullscreen(); } catch { showError('La pantalla completa no está disponible en este navegador.'); } });
+$('#fullscreenButton').addEventListener('click', async () => {
+  const card = $('#viewerCard');
+  if (document.fullscreenElement) { await document.exitFullscreen(); return; }
+  if (card.classList.contains('theater-mode')) { card.classList.remove('theater-mode'); return; }
+  try { if (card.requestFullscreen) await card.requestFullscreen(); else card.classList.add('theater-mode'); }
+  catch { card.classList.add('theater-mode'); }
+});
+$('#exitFullscreenButton').addEventListener('click', async () => {
+  if (document.fullscreenElement) await document.exitFullscreen();
+  else $('#viewerCard').classList.remove('theater-mode');
+});
+document.addEventListener('fullscreenchange', () => $('#exitFullscreenButton').classList.toggle('hidden', !document.fullscreenElement));
+ui.downloadImage.addEventListener('click', downloadImageResult);
+ui.downloadVideo.addEventListener('click', downloadVideoResult);
 ui.play.addEventListener('click', () => video.toggle());
 ui.timeline.addEventListener('input', () => video.seek(ui.timeline.value));
 ui.back.addEventListener('click', () => video.seekBy(-10));
