@@ -30,6 +30,12 @@ const inputChoices = {
   sbs: { title: 'Tipo de imagen', choices: [['stereo', 'Imagen SBS'], ['mono', 'Una foto 2D duplicada']] },
   video: { title: 'Tipo de video', choices: [['stereo', 'Video SBS'], ['mono', 'Video 2D duplicado']] },
 };
+const sampleCatalog = [
+  { id: 'anaglyph-joined', mode: 'anaglyph', layout: 'joined', title: 'Foto_palma.jpeg', detail: 'Anaglifo preparado', files: ['assets/samples/Foto_palma.jpeg'] },
+  { id: 'anaglyph-pair', mode: 'anaglyph', layout: 'pair', title: 'Palmera_IZQ + DER', detail: 'Dos perspectivas · anaglifo', files: ['assets/samples/Palmera_IZQ.jpeg', 'assets/samples/Palmera_DER.jpeg'] },
+  { id: 'sbs-joined', mode: 'sbs', layout: 'stereo', title: 'Arco.jpg', detail: 'Imagen SBS', files: ['assets/samples/Arco.jpg'] },
+  { id: 'sbs-mono', mode: 'sbs', layout: 'mono', title: 'Palmera_IZQ.jpeg', detail: 'Foto 2D · duplicada a SBS', files: ['assets/samples/Palmera_IZQ.jpeg'] },
+];
 
 function showError(message) {
   ui.toast.classList.remove('success'); ui.toast.textContent = message; ui.toast.classList.remove('hidden');
@@ -45,6 +51,7 @@ function syncControls() {
   ui.empty.classList.toggle('hidden', ready);
   ui.stage.classList.toggle('has-content', ready);
   ui.reset.disabled = !ready; ui.remove.disabled = !ready; ui.vr.disabled = !ready || mode === 'anaglyph';
+  ui.vr.classList.toggle('hidden', mode === 'anaglyph');
   ui.savePreset.disabled = !ready; ui.applyPreset.disabled = !ready || !ui.presetSelect.value;
   ui.downloadImage.disabled = !ready || mode === 'video';
   ui.videoExportTools.classList.toggle('hidden', mode !== 'video');
@@ -53,12 +60,51 @@ function syncControls() {
   $('#fullscreenButton').title = mode === 'anaglyph' ? 'Ver anaglifo en pantalla completa' : 'Pantalla completa';
   $('#fullscreenButton').setAttribute('aria-label', $('#fullscreenButton').title);
   $('#fullscreenButtonLabel').textContent = mode === 'anaglyph' ? 'Ver grande' : 'Expandir';
+  $('.shortcut').classList.toggle('hidden', mode === 'anaglyph');
   updateVideoExportInfo();
   document.querySelectorAll('.control-panel input').forEach(input => input.disabled = !ready);
   ui.videoControls.classList.toggle('hidden', mode !== 'video');
   $('#anaglyphPanel').classList.toggle('hidden', mode !== 'anaglyph');
   $('#sbsPanel').classList.toggle('hidden', mode === 'anaglyph');
   setStatus(ready);
+  refreshSampleCollection();
+}
+function refreshSampleCollection() {
+  const labels = { anaglyph: 'ANAGLIFO', sbs: 'IMAGEN SBS', video: 'VIDEO SBS' };
+  $('#sampleModeLabel').textContent = labels[mode];
+  const list = $('#sampleList');
+  if (mode === 'video') {
+    list.innerHTML = '<div class="sample-empty">Aún no hay un video de ejemplo. Cuando tengas uno, colócalo en <code>assets/samples/</code> y podrá añadirse a esta colección.</div>';
+    return;
+  }
+  const available = sampleCatalog.filter(item => item.mode === mode && item.layout === layout);
+  list.innerHTML = available.map(item => `<button class="sample-card" type="button" data-sample="${item.id}" aria-label="Cargar muestra ${item.title}"><img class="sample-thumb" src="${item.files[0]}" alt="Vista previa de ${item.title}" loading="lazy"><span class="sample-card-copy"><b>${item.title}</b><small>${item.detail}</small></span></button>`).join('');
+}
+async function loadSample(id) {
+  const sample = sampleCatalog.find(item => item.id === id);
+  if (!sample) return;
+  if (mode !== sample.mode) changeMode(sample.mode);
+  const layoutOption = document.querySelector(`#inputMethodOptions input[value="${sample.layout}"]`);
+  if (layoutOption && !layoutOption.checked) {
+    layoutOption.checked = true;
+    layoutOption.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  try {
+    const files = await Promise.all(sample.files.map(async path => {
+      const response = await fetch(path);
+      if (!response.ok) throw new Error(`No se encontró ${path}. Copia la imagen correspondiente en la carpeta assets/samples/ del proyecto.`);
+      const blob = await response.blob();
+      const filename = path.split('/').pop();
+      return new File([blob], filename, { type: blob.type || (filename.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg') });
+    }));
+    if (sample.layout === 'pair') {
+      pairFiles = { left: files[0], right: files[1] };
+      $('#leftFileName').textContent = files[0].name;
+      $('#rightFileName').textContent = files[1].name;
+      $('#generatePairButton').disabled = false;
+    }
+    await importFile(files);
+  } catch (error) { showError(error.message || 'No se pudo cargar la imagen de ejemplo.'); }
 }
 function updateVideoExportInfo() {
   if (mode !== 'video') return;
@@ -195,7 +241,7 @@ async function importFile(selection = null) {
       source = await combineAnaglyph(objectUrls[0], objectUrls[1]);
       objectUrls.forEach(url => URL.revokeObjectURL(url)); objectUrls = [];
     }
-    else source = await loadImage(objectUrls[0]);
+    else source = await loadImage(objectUrls[0], files[0].name);
     renderer.setSource(source, mode); updateCalibration();
     const fileName = mode === 'anaglyph' && layout === 'pair' ? `${files[0].name} (izquierda) + ${files[1].name} (derecha)` : files[0].name;
     const totalSize = files.reduce((sum, item) => sum + item.size, 0);
@@ -215,6 +261,10 @@ async function importFile(selection = null) {
 }
 
 document.querySelectorAll('.module-tab').forEach(tab => tab.addEventListener('click', () => changeMode(tab.dataset.mode)));
+$('#sampleList').addEventListener('click', event => {
+  const button = event.target.closest('[data-sample]');
+  if (button) loadSample(button.dataset.sample);
+});
 ui.file.addEventListener('change', () => importFile(Array.from(ui.file.files || [])));
 $('#inputMethodOptions').addEventListener('change', event => {
   if (event.target.name !== 'inputLayout') return;

@@ -65,7 +65,7 @@ Abre `http://localhost:8000`. También se puede usar Live Server en Visual Studi
 
 ## Material y pruebas
 
-No se distribuyen imágenes ni videos de demostración. Prepara tres archivos de prueba auténticos y con licencia adecuada: anaglifo rojo-cian, imagen SBS con dos perspectivas y video MP4 SBS. La compatibilidad MP4 depende del códec y del navegador; prueba el video concreto en el teléfono de evaluación.
+La colección de imágenes de ejemplo usa rutas relativas dentro de `assets/samples/`: `Foto_palma.jpeg` (anaglifo preparado), `Palmera_IZQ.jpeg` y `Palmera_DER.jpeg` (pareja para generar anaglifo), `Arco.jpg` (imagen SBS) y `Palmera_IZQ.jpeg` como entrada 2D para duplicar en SBS. Agrega esos archivos originales a esa carpeta para que los botones de muestra estén disponibles en GitHub Pages. Aún no hay un video de demostración; cuando se tenga, se puede añadir ahí como MP4 SBS. Comprueba la compatibilidad del video concreto en el teléfono de evaluación.
 
 Registra la evidencia ejecutada antes de entregar:
 

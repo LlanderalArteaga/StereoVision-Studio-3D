@@ -8,8 +8,31 @@ export function validateFile(file, mode) {
   }
   if (!IMAGE_TYPES.includes(file.type) && !/\.(jpe?g|png|webp)$/i.test(file.name)) throw new Error('Formato no compatible. Selecciona una imagen JPG, PNG o WebP.');
 }
-export function loadImage(url) {
-  return new Promise((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = () => reject(new Error('El navegador no pudo decodificar la imagen. Prueba con otro archivo.')); image.src = url; });
+export function loadImage(url, label = 'la imagen') {
+  return new Promise((resolve, reject) => {
+    let attempt = 0;
+    const decode = () => {
+      attempt += 1;
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = async () => {
+        if (!image.naturalWidth || !image.naturalHeight) return retry();
+        try {
+          if (image.decode) await image.decode();
+          resolve(image);
+        } catch {
+          retry();
+        }
+      };
+      image.onerror = retry;
+      image.src = url;
+    };
+    const retry = () => {
+      if (attempt < 3) setTimeout(decode, attempt * 180);
+      else reject(new Error(`No se pudo decodificar ${label} después de varios intentos. Comprueba que el archivo terminó de copiarse y vuelve a seleccionarlo; también puedes guardar una copia como JPG o PNG.`));
+    };
+    decode();
+  });
 }
 
 export async function combineAnaglyph(leftUrl, rightUrl) {
