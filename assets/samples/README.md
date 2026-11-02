@@ -1,10 +1,10 @@
-# Imágenes de ejemplo
+# Colección de muestras
 
-Coloca aquí los archivos originales que usa la colección de la aplicación:
+- `Foto_palma.jpeg`: anaglifo rojo-cian preparado.
+- `Palmera_IZQ.jpeg` y `Palmera_DER.jpeg`: pareja para generar un anaglifo.
+- `Arco.jpg`: imagen SBS.
+- `Palmera_IZQ.jpeg`: foto 2D que puede duplicarse para generar una composición SBS.
+- `Video_3_DER_Editado.mp4`: video 2D que puede duplicarse en SBS.
+- `video-lancha3.mp4`: video SBS con las perspectivas izquierda y derecha en el mismo archivo.
 
-- `Foto_palma.jpeg`: anaglifo rojo-cian ya combinado.
-- `Palmera_IZQ.jpeg` y `Palmera_DER.jpeg`: perspectivas izquierda y derecha para generar un anaglifo.
-- `Arco.jpg`: imagen SBS con las dos perspectivas.
-- `Palmera_IZQ.jpeg`: también se usa como entrada 2D para duplicarla en SBS.
-
-El video de ejemplo todavía está pendiente. Cuando esté disponible, agrega el MP4 SBS aquí y actualiza la colección.
+Las muestras se cargan desde la colección de la aplicación y no se envían a ningún servicio externo.

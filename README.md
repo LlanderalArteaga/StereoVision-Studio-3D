@@ -1,93 +1,61 @@
 # StereoVision Studio 3D
 
-Aplicación web estática para importar desde el dispositivo y visualizar imágenes anaglifo rojo-cian, imágenes estereoscópicas Side-by-Side (SBS) y videos SBS. Está pensada para estudiantes y docentes que necesitan inspeccionar material 3D, ajustar su presentación y usar un teléfono con visor de dos lentes.
-
 ## Qué resuelve
 
-El anaglifo mezcla información de ambas perspectivas en canales de color y se observa con lentes rojo-cian. El formato SBS conserva las perspectivas en dos mitades horizontales: la izquierda alimenta el ojo izquierdo y la derecha el ojo derecho. StereoVision Studio permite ajustar la representación en pantalla, pero no genera profundidad a partir de una imagen plana ni altera el archivo fuente. La IPD física de cada persona queda fuera de los ajustes digitales.
+StereoVision Studio 3D permite visualizar y calibrar contenido estereoscópico desde un navegador de escritorio o teléfono. El anaglifo mezcla las perspectivas en canales de color y se observa con lentes rojo-cian. Side-by-Side (SBS) muestra una perspectiva a cada lado para verla con un visor estereoscópico.
 
-La aplicación procesa los archivos localmente en el navegador. No hay cuentas, backend, base de datos ni carga de archivos. Se aceptan imágenes JPG/JPEG, PNG y WebP, además de video MP4 según los códecs que soporte el navegador.
+La aplicación está dirigida a estudiantes y personas que necesitan revisar contenido 3D. No crea profundidad a partir de una sola foto o video: al duplicar contenido 2D genera una presentación SBS, pero no una perspectiva estereoscópica real. El editor cambia únicamente la vista y no sobrescribe el archivo original.
 
-## Funciones
+## Función
 
-- Módulo anaglifo con escala, brillo y contraste.
-- Entrada de anaglifo ya preparado o generación rojo-cian a partir de dos fotos ordenadas (izquierda y derecha).
-- Visor de imagen SBS con separación horizontal, alineación vertical, escala e intercambio real de perspectivas.
-- Alternativa para duplicar una foto 2D en las dos vistas SBS; esto permite usar el visor, pero no inventa profundidad.
-- Visor de video SBS con una sola fuente de reproducción, controles nativos propios de play/pausa, búsqueda, volumen y calibración simultánea.
-- Alternativa para duplicar video 2D en ambas vistas, indicada como contenido sin profundidad estereoscópica.
-- Modo Viewer con dos regiones para los ojos, salida táctil y aviso de orientación vertical.
-- Perfiles de calibración con nombre, guardados en el navegador y reutilizables para el mismo módulo y tipo de entrada.
-- Vista de anaglifo a pantalla completa, con salida en navegadores móviles que no ofrecen Fullscreen API.
-- Descarga de anaglifo generado en PNG e imagen 2D duplicada a SBS en PNG. Los archivos que ya están preparados se descargan sin transformación.
-- Exportación de video 2D duplicado a SBS como WebM mediante captura del video en tiempo real; incluye audio si el navegador permite capturarlo.
-- Sustitución de archivo, validación de formatos y decodificación, restablecimiento de parámetros y liberación de recursos temporales.
-- Diseño adaptable a escritorio y teléfono.
+- Importa imágenes JPG/JPEG, PNG y WebP, además de videos MP4 compatibles con el navegador.
+- Muestra anaglifos preparados o combina imágenes de ojo izquierdo y derecho.
+- Presenta imágenes SBS y permite duplicar una foto 2D en ambas vistas.
+- Reproduce videos SBS desde una misma fuente para conservar sincronía. También permite duplicar un video 2D.
+- Ajusta escala, brillo, contraste y alineación según el módulo, y guarda perfiles de calibración en el navegador.
+- Ofrece vista grande para anaglifos y modo Viewer dividido para contenido SBS.
+- Incluye muestras de anaglifo, imágenes SBS, pareja de perspectivas y videos 2D y SBS.
+
+Las muestras están en `assets/samples/`: `Foto_palma.jpeg`, `Palmera_IZQ.jpeg`, `Palmera_DER.jpeg`, `Arco.jpg`, `Video_3_DER_Editado.mp4` (2D) y `video-lancha3.mp4` (SBS). El MP4 SBS ocupa aproximadamente 89.8 MiB y cumple el límite de 100 MiB por archivo para publicarlo como archivo normal en GitHub.
 
 ## Arquitectura
 
-```text
-index.html
-assets/
-  css/styles.css             Interfaz, diseño adaptable y modo visor
-  img/favicon.svg            Favicon vectorial original
-  js/main.js                 Inicio, estado de la interfaz y eventos
-  js/modules/files.js        Validación de formato y decodificación de imagen
-  js/modules/calibration.js  Valores, restablecimiento e indicadores
-  js/modules/renderer.js     Composición Canvas 2D de imagen y perspectivas
-  js/modules/video.js        Reproducción, búsqueda y liberación de video
-  js/modules/exports.js      Descargas de imagen y captura de video SBS
-  js/modules/vr.js           Presentación en dos regiones para móvil
-```
+- `index.html`: estructura de la interfaz, módulos, colección y controles.
+- `assets/css/styles.css`: diseño adaptable para escritorio y teléfono.
+- `assets/js/main.js`: inicialización y coordinación de importación, muestras e interfaz.
+- `assets/js/modules/files.js`: validación, decodificación y composición de anaglifo.
+- `assets/js/modules/renderer.js`: renderizado Canvas de anaglifo e imágenes o videos SBS.
+- `assets/js/modules/video.js`: carga, reproducción y liberación de videos.
+- `assets/js/modules/calibration.js`: ajustes y perfiles de calibración.
+- `assets/js/modules/exports.js`: descarga de imágenes y generación SBS de video duplicado.
+- `assets/js/modules/vr.js`: presentación dividida para Viewer/VR.
+- `assets/samples/`: imágenes y videos de ejemplo incluidos en la colección.
+- `assets/img/favicon.svg`: favicon del proyecto.
 
-La vista SBS recorta las dos mitades del mismo archivo. El video se dibuja desde un único elemento multimedia para mantener el sincronismo y sus controles. Los cambios de calibración actúan en la representación en pantalla.
-
-El botón de descarga conserva los originales que ya son anaglifo, SBS o video SBS. Para dos fotos de anaglifo descarga el resultado combinado como PNG; para una foto 2D en modo SBS descarga un PNG con la foto duplicada a ambos lados. Al elegir un video 2D, **Crear y descargar SBS** reproduce el video completo y captura ambas vistas en un archivo WebM. La exportación tarda lo mismo que la duración del video y depende de que el navegador tenga `MediaRecorder` y `canvas.captureStream`; el audio se agrega cuando el navegador lo permite. No convierte a MP4.
-
-Para generar un anaglifo, selecciona las fotos en los campos separados **Foto izquierda** y **Foto derecha**. También puedes usar el botón central: te pedirá primero la imagen izquierda y después la derecha. La primera aporta el canal rojo y la segunda los canales verde y azul. Los perfiles guardados se ofrecen cuando coinciden el módulo y el tipo de entrada; permanecen en el almacenamiento del navegador donde fueron creados.
+La aplicación usa HTML, CSS y módulos ES de JavaScript, sin backend, cuentas, base de datos ni servicios externos. Los archivos importados se procesan en el navegador.
 
 ## Ejecución local
 
-Sirve la carpeta desde un origen HTTP; los módulos ES no deben abrirse con `file://`.
+Desde la carpeta del proyecto, inicia un servidor HTTP:
 
 ```bash
 python -m http.server 8000
 ```
 
-Abre `http://localhost:8000`. También se puede usar Live Server en Visual Studio Code.
+Abre `http://localhost:8000`. También puedes usar Live Server en Visual Studio Code. No abras el HTML con `file://`, porque los módulos ES necesitan un origen HTTP.
 
 ## Publicación en GitHub Pages
 
-1. Sube el contenido del repositorio a GitHub.
-2. En **Settings → Pages**, elige la rama principal y la carpeta raíz (`/`).
-3. Espera a que GitHub Pages publique el sitio y comprueba la URL HTTPS.
-4. Abre esa URL en escritorio y en el teléfono. Las rutas del proyecto son relativas para funcionar en la URL del repositorio.
+1. Sube el contenido del proyecto, incluida `assets/samples/`, a la rama que publicarás.
+2. En GitHub, abre **Settings → Pages** y selecciona esa rama y la carpeta raíz (`/`).
+3. Abre la URL HTTPS publicada. Las rutas relativas permiten servir el proyecto desde la ruta del repositorio.
 
-## Material y pruebas
-
-La colección de imágenes de ejemplo usa rutas relativas dentro de `assets/samples/`: `Foto_palma.jpeg` (anaglifo preparado), `Palmera_IZQ.jpeg` y `Palmera_DER.jpeg` (pareja para generar anaglifo), `Arco.jpg` (imagen SBS) y `Palmera_IZQ.jpeg` como entrada 2D para duplicar en SBS. Agrega esos archivos originales a esa carpeta para que los botones de muestra estén disponibles en GitHub Pages. Aún no hay un video de demostración; cuando se tenga, se puede añadir ahí como MP4 SBS. Comprueba la compatibilidad del video concreto en el teléfono de evaluación.
-
-Registra la evidencia ejecutada antes de entregar:
-
-| ID | Comprobación | Resultado / evidencia |
-|---|---|---|
-| P-01 | Inicio vacío y controles desactivados | Pendiente de prueba local |
-| P-02 | Anaglifo: carga, escala, brillo y contraste | Pendiente de prueba local |
-| P-03 | Imagen SBS: ojos, calibración e intercambio | Pendiente de prueba local |
-| P-04 | Video SBS: play, pausa, búsqueda, volumen y tiempos | Pendiente de prueba local |
-| P-05 | Calibración de video durante reproducción | Pendiente de prueba local |
-| P-06 | Sustitución entre formatos y liberación | Pendiente de prueba local |
-| P-07 | Archivo no compatible y recuperación | Pendiente de prueba local |
-| P-08 | VR en teléfono horizontal y salida | Pendiente de prueba con dispositivo |
-| P-09 | Sitio HTTPS en GitHub Pages | Pendiente de publicación |
-| P-10 | Descargas PNG anaglifo/SBS y exportación WebM | Pendiente de prueba local |
-
-Incluye en la entrega resultados reales, dispositivo/navegador, observaciones de calibración e incidencias resueltas. El repositorio público y la publicación HTTPS deben configurarse desde la cuenta del estudiante.
+Los videos deben ser compatibles con los navegadores de destino. GitHub Pages admite los archivos normales del repositorio; mantén cada archivo por debajo de 100 MiB.
 
 ## Conclusiones
 
-StereoVision Studio reúne en una sola interfaz tres flujos de visualización estereoscópica y mantiene separados el contenido fuente y los ajustes de presentación. El recorte por ojo permite trabajar con perspectivas SBS reales, mientras que una única fuente de video mantiene el avance y la pausa sincronizados. La publicación es estática y puede alojarse en GitHub Pages; la comprobación final de códecs, comodidad binocular y uso con gafas debe completarse con los archivos y dispositivos de la evaluación.
+StereoVision Studio 3D reúne la visualización de anaglifos, imágenes SBS y videos SBS en una interfaz adaptable. La colección incluida permite explorar sus modalidades sin buscar archivos por separado, y la calibración modifica la vista sin alterar los originales. El sitio puede ejecutarse por HTTP en local y publicarse como una aplicación estática en GitHub Pages.
 
 ## Créditos
 
-Proyecto académico del Tema 2. Diseño y desarrollo: Axel Llanderal Arteaga. Interfaz, código, iconografía y favicon originales. Tecnologías: HTML, CSS, JavaScript ES Modules y Canvas 2D; sin dependencias externas de ejecución. No se incluyen medios de terceros. Atribuye y verifica las licencias de cualquier contenido estereoscópico que añadas para la demostración.
+Proyecto académico del Tema 2. Diseño y desarrollo: **Axel Llanderal Arteaga**. Tecnologías: HTML, CSS, JavaScript ES Modules y Canvas 2D. Interfaz, iconografía y favicon originales.

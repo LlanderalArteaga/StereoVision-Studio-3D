@@ -35,6 +35,8 @@ const sampleCatalog = [
   { id: 'anaglyph-pair', mode: 'anaglyph', layout: 'pair', title: 'Palmera_IZQ + DER', detail: 'Dos perspectivas · anaglifo', files: ['assets/samples/Palmera_IZQ.jpeg', 'assets/samples/Palmera_DER.jpeg'] },
   { id: 'sbs-joined', mode: 'sbs', layout: 'stereo', title: 'Arco.jpg', detail: 'Imagen SBS', files: ['assets/samples/Arco.jpg'] },
   { id: 'sbs-mono', mode: 'sbs', layout: 'mono', title: 'Palmera_IZQ.jpeg', detail: 'Foto 2D · duplicada a SBS', files: ['assets/samples/Palmera_IZQ.jpeg'] },
+  { id: 'video-stereo', mode: 'video', layout: 'stereo', title: 'video-lancha3.mp4', detail: 'Video SBS', files: ['assets/samples/video-lancha3.mp4'] },
+  { id: 'video-mono', mode: 'video', layout: 'mono', title: 'Video_3_DER_Editado.mp4', detail: 'Video 2D · duplicado en SBS', files: ['assets/samples/Video_3_DER_Editado.mp4'] },
 ];
 
 function showError(message) {
@@ -73,12 +75,8 @@ function refreshSampleCollection() {
   const labels = { anaglyph: 'ANAGLIFO', sbs: 'IMAGEN SBS', video: 'VIDEO SBS' };
   $('#sampleModeLabel').textContent = labels[mode];
   const list = $('#sampleList');
-  if (mode === 'video') {
-    list.innerHTML = '<div class="sample-empty">Aún no hay un video de ejemplo. Cuando tengas uno, colócalo en <code>assets/samples/</code> y podrá añadirse a esta colección.</div>';
-    return;
-  }
   const available = sampleCatalog.filter(item => item.mode === mode && item.layout === layout);
-  list.innerHTML = available.map(item => `<button class="sample-card" type="button" data-sample="${item.id}" aria-label="Cargar muestra ${item.title}"><img class="sample-thumb" src="${item.files[0]}" alt="Vista previa de ${item.title}" loading="lazy"><span class="sample-card-copy"><b>${item.title}</b><small>${item.detail}</small></span></button>`).join('');
+  list.innerHTML = available.map(item => `<button class="sample-card" type="button" data-sample="${item.id}" aria-label="Cargar muestra ${item.title}" ${item.unavailable ? 'disabled title="Se necesita una versión comprimida para GitHub Pages"' : ''}>${mode === 'video' ? '<span class="sample-thumb sample-video-thumb" aria-hidden="true">▶</span>' : `<img class="sample-thumb" src="${item.files[0]}" alt="Vista previa de ${item.title}" loading="lazy">`}<span class="sample-card-copy"><b>${item.title}</b><small>${item.detail}</small></span></button>`).join('');
 }
 async function loadSample(id) {
   const sample = sampleCatalog.find(item => item.id === id);
